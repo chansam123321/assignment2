@@ -66,3 +66,29 @@ server.get('/ShowComic', function(req, res, next){
         res.end();
     });
 });
+
+//Add more Comic Funtion
+server.post('/addComic', function(req, res, next){
+    var result = new Promise(function(collectedMessage, reject){
+        if (req.headers['content-type'] != 'application/json'){
+            collectedMessage({
+                Message : "fail"
+            });
+        }else{
+            var json = req.body;
+            var id = req.query.comicId;
+            var comicRefStringResult = "Comic/"+id;
+            
+            firebase.database().ref(comicRefStringResult).set(json);
+            collectedMessage({
+                Message : "Successfully",
+                Sid: id
+            });
+        }
+    });
+    
+    result.then(function(value){
+        res.send(value);
+        res.end();
+    });
+});
