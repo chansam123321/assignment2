@@ -2,10 +2,12 @@ var restify = require("restify");
 var firebase = require("firebase")
 var server = restify.createServer();
 
+
 server.use(restify.queryParser());
 server.use(restify.bodyParser());
 server.use(restify.CORS());
 
+//config for firebase
   var config = {
     apiKey: "AIzaSyCH_EASP-1L1lZvSgr7Pdhp7V3WjjXo1iQ",
     authDomain: "bamboo-position-150706.firebaseapp.com",
@@ -15,126 +17,49 @@ server.use(restify.CORS());
     messagingSenderId: "824984647747"
   };
   firebase.initializeApp(config);
-
-
 var database = firebase.database();
 
+//Shows server prot and IP address
 server.listen(8080, function(err) {
-    console.log(process.env.PORT, process.env.IP);
-    console.log("App is ready at :" + "8080");
+    //console.log(process.env.PORT, process.env.IP);
+    console.log("Your Server Port is :" + process.env.PORT);
+    console.log("Your IP  is :" + process.env.IP);
+    console.log("Connect Successfully");
 });
 
-server.get('/listComic', function(req, res, next){
-    var moviesid = req.query.moviesid;
-    var result = new Promise(function(resolve, reject){
-        var moviesRefStr = "Comic/";
-        if (moviesid != null){
-            moviesRefStr += moviesid;
+//Get Comic Funtion
+server.get('/ShowComic', function(req, res, next){
+    var comicId = req.query.comicId;
+    var result = new Promise(function(collectedMessage, reject){
+        var comicRefStringResult = "Comic/";
+        if (comicId != null){
+            comicRefStringResult += comicId;
         }
         
-    var moviesRef = database.ref(moviesRefStr);
-    moviesRef.once('value').then(function(sn){
-        var json = sn.val();
-        var size = sn.numChildren();
+    var comicRef = database.ref(comicRefStringResult);
+    comicRef.once('value').then(function(getData){
+        var json = getData.val();
+        var size = getData.numChildren();
         
         if (json != null){
-            if (moviesid != null){
+            if (comicId != null){
                 size = 1;
             }
             
-            resolve({
-                success: true,
-                list: json,
-                size: size
+            collectedMessage({
+               
+                Comiclist: json
+                
             });
         }
         else {
-            resolve({
-                success: false,
-                message: "fail"
+            collectedMessage({
+                Message: "fail"
             });
         }
     });
         
 });
-    
-    result.then(function(value){
-        res.send(value);
-        res.end();
-    });
-});
-
-server.post('/addComic', function(req, res, next){
-    var result = new Promise(function(resolve, reject){
-        if (req.headers['content-type'] != 'application/json'){
-            resolve({
-                success: false,
-                message : "fail"
-            });
-        }else{
-            var json = req.body;
-            var id = req.query.moviesid;
-            var moviesRefStr = "Comic/"+id;
-            
-            firebase.database().ref(moviesRefStr).set(json);
-            resolve({
-                success:true,
-                moviesId: id
-            });
-        }
-    });
-    
-    result.then(function(value){
-        res.send(value);
-        res.end();
-    });
-});
-
-
-server.patch("/updataComic", function(req, res, next){
-    var result = new Promise (function(resolve, reject){
-        if (req.headers['content-type'] == 'application/json'){
-            var moviesid = req.query.moviesid;
-            var json = req.body;
-            if (moviesid != null && json !=null){
-                var moviesRefStr = "Comic/" + moviesid;
-                firebase.database().ref(moviesRefStr).update(json);
-                resolve({
-                    success: true,
-                    id : moviesid,
-                    update:json
-                });
-            }else{
-                resolve({
-                    success: false
-                });
-            }
-        }
-        else{
-            resolve({
-                success:false
-            });
-        }
-    });
-});
-
-server.del('deleteComic', function(req, res, next){
-    var result = new Promise(function (resolve, reject){
-        var moviesid = req.query.moviesid;
-        if (moviesid != null){
-            var moviesRefStr = "Comic/" + moviesid;
-            firebase.database().ref(moviesRefStr).remove();
-            resolve({
-                success: true,
-                id : moviesid
-            });
-        }else{
-            resolve({
-                success : false,
-                message : "fail"
-            });
-        }
-    });
     
     result.then(function(value){
         res.send(value);
