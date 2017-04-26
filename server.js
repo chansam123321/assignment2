@@ -92,3 +92,55 @@ server.post('/addComic', function(req, res, next){
         res.end();
     });
 });
+
+//Updata Comic Funtion
+server.patch("/updataComic", function(req, res, next){
+    var result = new Promise (function(collectedMessage, reject){
+        if (req.headers['content-type'] == 'application/json'){
+            var comicId = req.query.comicId;
+            var json = req.body;
+            if (comicId != null && json !=null){
+                var comicRefStringResult = "Comic/" + comicId;
+                firebase.database().ref(comicRefStringResult).update(json);
+                collectedMessage({
+                    Message : "Successfully",
+                    Sid : comicId,
+                    Update:json
+                });
+            }else{
+                collectedMessage({
+                    Message : "fail"
+                });
+            }
+        }
+        else{
+            collectedMessage({
+                Message : "fail"
+            });
+        }
+    });
+});
+
+//Delete Comic Funtion
+server.del('deleteComic', function(req, res, next){
+    var result = new Promise(function (collectedMessage, reject){
+        var comicId = req.query.comicId;
+        if (comicId != null){
+            var comicRefStringResult = "Comic/" + comicId;
+            firebase.database().ref(comicRefStringResult).remove();
+            collectedMessage({
+              Message : "Successfully",
+                Sid : comicId
+            });
+        }else{
+            collectedMessage({
+                Message : "fail"
+            });
+        }
+    });
+    
+    result.then(function(value){
+        res.send(value);
+        res.end();
+    });
+});
